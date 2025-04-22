@@ -52,6 +52,7 @@ password = input("Enter your password: ")
 
 if username in users and users[username] == password:
     print("Login successful!")
+    print("---------------------------------")
     print("We have 3 texts to be analyzed.")
     print("---------------------------------")
     try:
