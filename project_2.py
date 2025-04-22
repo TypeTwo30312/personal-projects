@@ -42,4 +42,6 @@ def count_bulls_and_cows(secret, guess):
     cows = sum(1 for char in guess if char in secret) - bulls
     return bulls, cows
 
+secret_number = "1234"
+print(count_bulls_and_cows(secret_number, "3245"))
 print(generate_secret_number())
