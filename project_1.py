@@ -9,6 +9,7 @@ email: tomas.vambersky@protonmail.com
 discord:
 
 """
+import sys
 
 users = {
     "bob": "123",
@@ -44,7 +45,18 @@ password = input("Enter your password: ")
 if username in users and users[username] == password:
     print("Login successful!")
     print("We have 3 texts to be analyzed.")
-    text = (TEXTS.get(int(input("Enter a number between 1 - 3 to select text: "))))
-    print(text)
+    
+    try:
+        number = int(input("Enter a number between 1 - 3 to select text: "))
+    except ValueError:
+        print("Entered value is not a number, terminating.")
+        sys.exit()
+    if number not in TEXTS:
+        print("Entered value is not one of the available numbers, terminating")
+        sys.exit()
+    text = (TEXTS.get(number))
+    words = text.split()
+    print(len(words))
+
 else:
     print("Invalid username or password.")
