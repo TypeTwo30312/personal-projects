@@ -68,14 +68,15 @@ if username in users and users[username] == password:
     words = text.split()
     word_length_count = {}
     for word in words:
-        if not word.isdigit():
+        if not word.isdigit(): ### This excludes numbers from word counts
             length = len(word)
             if length in word_length_count:
                 word_length_count[length] += 1
             else:
                 word_length_count[length] = 1
 
-    print(f'There are {len(words)} words in the selected text.')
+    print("---------------------------------")
+    print(f'There are {len(words)} words in the selected text, of which {sum(1 for word in words if not word.isdigit())} are not numbers.')
     print(f'There are {sum(1 for word in words if word.istitle())} titlecase words.')
     print(f'There are {sum(1 for word in words if word.isupper())} uppercase words.')
     print(f'There are {sum(1 for word in words if word.islower())} lowercase words.')
