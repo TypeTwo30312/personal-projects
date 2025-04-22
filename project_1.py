@@ -74,21 +74,22 @@ if username in users and users[username] == password:
                 word_length_count[length] += 1
             else:
                 word_length_count[length] = 1
+    max_count = max(word_length_count.values())
 
     print("---------------------------------")
-    print(f'There are {len(words)} words in the selected text, of which {sum(1 for word in words if not word.isdigit())} are not numbers.')
-    print(f'There are {sum(1 for word in words if word.istitle())} titlecase words.')
-    print(f'There are {sum(1 for word in words if word.isupper())} uppercase words.')
-    print(f'There are {sum(1 for word in words if word.islower())} lowercase words.')
-    print(f'There are {sum(1 for word in words if word.isdigit())} numeric strings.')
-    print(f'The sum of all the numbers {sum(int(word) for word in words if word.isdigit())}')
+    print(f"There are {len(words)} words in the selected text, of which {sum(1 for word in words if not word.isdigit())} are not numbers.")
+    print(f"There are {sum(1 for word in words if word.istitle())} titlecase words.")
+    print(f"There are {sum(1 for word in words if word.isupper())} uppercase words.")
+    print(f"There are {sum(1 for word in words if word.islower())} lowercase words.")
+    print(f"There are {sum(1 for word in words if word.isdigit())} numeric strings.")
+    print(f"The sum of all the numbers {sum(int(word) for word in words if word.isdigit())}")
     print("---------------------------------")
 
-    print(f"LEN | ocurrence {" "*(max(word_length_count.values())-9)} | number")
+    print(f"LEN | ocurrence {' '*(max_count-9)} | number")
     print("---------------------------------")
     for length in sorted(word_length_count):
         count = word_length_count[length]
-        print(f"{' '*(3-len(str(length)))}{length} | {'*' * count} {" "*(max(word_length_count.values())-count)} | {count}")
+        print(f"{str(length).rjust(3)} | {'*' * count} {' '*(max_count-count)} | {count}")
 
 else:
     print("Invalid username or password.")
