@@ -14,15 +14,7 @@ from requests import get
 from bs4 import BeautifulSoup
 import csv
 import html
-import re
-
-import unicodedata
-
-def clean_number(text):
-    """Remove all spaces, non-breaking spaces, and narrow spaces between digits."""
-    return text.strip().replace('\xa0', '').replace(' ', '').replace('\u202f', '')
-
-
+import sys
 
 def find_district_link(district):
     """Returns a link to the chosen districts page."""
@@ -56,9 +48,9 @@ def get_municipality_links(district_link):
     for row in rows:
         cells = row.find_all("td")
         if len(cells) >= 3:
-            code = cells[0].text.strip()                    # first <td>: town code
-            name = cells[1].text.strip()                    # second <td>: town name
-            link_tag = cells[2].find("a")                   # third <td>: link to result page (adjust index if needed)
+            code = cells[0].text.strip()
+            name = cells[1].text.strip()
+            link_tag = cells[0].find("a")                   # hyperlink on the code is the correct one
 
             if link_tag:
                 relative_link = html.unescape(link_tag["href"])
@@ -71,46 +63,50 @@ def get_municipality_links(district_link):
 
     return municipality_list
 
-def extract_summary_data(soup):
-    summary_table = soup.find_all("table", {"class": "table"})[0]  # first table is the summary
-    rows = summary_table.find_all("tr")
-
-    for row in rows:
-        voters_cell = row.find("td", {"headers": "sa2"})
-        envelopes_cell = row.find("td", {"headers": "sa3"})
-        valid_votes_cell = row.find("td", {"headers": "sa6"})
-
-        if voters_cell:
-            voters = clean_number(html.unescape(voters_cell.text))
-        if envelopes_cell:
-            envelopes = clean_number(html.unescape(envelopes_cell.text))
-        if valid_votes_cell:
-            valid_votes = clean_number(html.unescape(valid_votes_cell.text))
-
-
-    return {
-        "voters": voters,
-        "envelopes": envelopes,
-        "valid_votes": valid_votes
-    }
+def clean_number(text):
+    """Remove spaces and non-breaking spaces from numbers."""
+    return text.strip().replace('\xa0', '').replace(' ', '')
 
 def scrape_municipality_result(municipality):
-
+    """Scrapes summary and vote results from one municipality result page."""
     page = get(municipality["link"])
     soup = BeautifulSoup(page.text, "html.parser")
-    return extract_summary_data(soup)
 
+    summary_table = soup.find_all("table", {"class": "table"})[0]
 
-    """### return {
+    voters_cell = summary_table.find("td", {"headers": "sa2"})
+    envelopes_cell = summary_table.find("td", {"headers": "sa3"})
+    valid_votes_cell = summary_table.find("td", {"headers": "sa6"})
+
+    voters = clean_number(voters_cell.text) if voters_cell else None
+    envelopes = clean_number(envelopes_cell.text) if envelopes_cell else None
+    valid_votes = clean_number(valid_votes_cell.text) if valid_votes_cell else None
+
+    ### Scrape party results
+    votes = []
+    party_names = []
+
+    result_tables = soup.find_all("table", {"class": "table"})[1:3]  # second and third tables
+    for table in result_tables:
+        rows = table.find_all("tr")
+        for row in rows:
+            cells = row.find_all("td")
+            if len(cells) >= 5:  # result rows should have at least 5 columns Is this necessary?
+                party_name = cells[1].text.strip()
+                vote_count = clean_number(cells[2].text)
+                if party_name:
+                    party_names.append(party_name)
+                    votes.append(vote_count)
+
+    return {
         "code": municipality["code"],
         "name": municipality["name"],
         "voters": voters,
         "envelopes": envelopes,
         "valid_votes": valid_votes,
         "votes": votes,
-        "party_names": party_names  # keep for now to confirm vote order
-    }"""
-
+        "party_names": party_names
+    }
 def write_results_to_csv(filename, municipality_results, party_names):
     """Writes municipality results to a CSV file with one line per municipality."""
     header = ["kód obce", "název obce", "voliči v seznamu", "vydané obálky", "platné hlasy"] + party_names
@@ -128,27 +124,18 @@ def write_results_to_csv(filename, municipality_results, party_names):
                 municipality["valid_votes"]
             ] + municipality["votes"]
             writer.writerow(row)
-municipality_results = [
-    {
-        "code": "CZ0714",
-        "name": "Přerov",
-        "voters": "54000",
-        "envelopes": "39000",
-        "valid_votes": "38500",
-        "votes": ["10000", "15000", "5000"]
-    },
-    {
-        "code": "CZ0214",
-        "name": "Perov",
-        "voters": "54000",
-        "envelopes": "39000",
-        "valid_votes": "38500",
-        "votes": ["10000", "15000", "5000"]
-    }]
-party_names = ["ODS", "ANO 2011", "ČSSD"]
-write_results_to_csv("fdg.csv", municipality_results, party_names)
-"""district_link = find_district_link("Ostrava-město")
-municipalities = get_municipality_links(district_link)
-for municipality in municipalities:
-    result = scrape_municipality_result(municipality)
-    print(result)"""
+
+def main(district_name, filename):
+    
+    district_link = find_district_link(district_name)
+    municipalities = get_municipality_links(district_link)
+    municipality_results = []
+    for municipality in municipalities:
+        result = scrape_municipality_result(municipality)
+        municipality_results.append(result)
+    party_names = municipality_results[0]["party_names"]
+    write_results_to_csv(filename, municipality_results, party_names)
+    
+
+if __name__ == "__main__":
+    main(sys.argv[1], sys.argv[2])
