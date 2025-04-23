@@ -46,18 +46,28 @@ def play_game():
     """Main game loop."""
     secret = generate_secret_number()
     attempts = 0
-    ### write the intro
+    print("""
+Hi there!
+-----------------------------------------------
+I've generated a random 4-digit number for you.
+Let's play a Bulls and Cows game.
+-----------------------------------------------
+""") ### write the intro
     while True:
         guess = input("Enter your guess: ")
+        print("-----------------------")
         if not is_valid_guess(guess):
             continue
-
+            ### print the guess?
         attempts += 1
         bulls, cows = count_bulls_and_cows(secret, guess)
-        print(cows, bulls)
+        print(f"{bulls} bulls, {cows} cows") ### plural forms
+        print("-----------------------")
         if bulls == 4:
-            print("ok")
-            print(attempts)
+            print(f"Correct!!! You guessed the secret number in {attempts} guesses.")
+            break
+        if attempts > 7:
+            print("game over")
             break
     
 if __name__ == "__main__":
