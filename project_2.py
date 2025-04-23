@@ -42,6 +42,23 @@ def count_bulls_and_cows(secret, guess):
     cows = sum(1 for char in guess if char in secret) - bulls
     return bulls, cows
 
-secret_number = "1234"
-print(count_bulls_and_cows(secret_number, "3245"))
-print(generate_secret_number())
+def play_game():
+    """Main game loop."""
+    secret = generate_secret_number()
+    attempts = 0
+    ### write the intro
+    while True:
+        guess = input("Enter your guess: ")
+        if not is_valid_guess(guess):
+            continue
+
+        attempts += 1
+        bulls, cows = count_bulls_and_cows(secret, guess)
+        print(cows, bulls)
+        if bulls == 4:
+            print("ok")
+            print(attempts)
+            break
+    
+if __name__ == "__main__":
+    play_game()
