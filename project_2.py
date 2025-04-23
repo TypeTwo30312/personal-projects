@@ -24,15 +24,19 @@ def is_valid_guess(guess):
     """Evaluates the guess"""
     if not guess.isdigit():
         print("Please enter digits only.")
+        print("-----------------------")
         return False
     if len(guess) != 4:
         print("The number must be exactly 4 digits long.")
+        print("-----------------------")
         return False
     if guess[0] == "0":
         print("The number cannot start with zero.")
+        print("-----------------------")
         return False
     if len(set(guess)) != 4:
         print("Digits must not repeat.")
+        print("-----------------------")
         return False
     return True
 
@@ -66,7 +70,6 @@ Let's play a Bulls and Cows game.
 """)
     while True:
         guess = input("Enter your guess: ")
-        print("-----------------------")
         if not is_valid_guess(guess):
             continue
 
