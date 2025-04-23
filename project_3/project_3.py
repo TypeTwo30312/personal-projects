@@ -14,6 +14,15 @@ from requests import get
 from bs4 import BeautifulSoup
 import csv
 import html
+import re
+
+import unicodedata
+
+def clean_number(text):
+    """Remove all spaces, non-breaking spaces, and narrow spaces between digits."""
+    return text.strip().replace('\xa0', '').replace(' ', '').replace('\u202f', '')
+
+
 
 def find_district_link(district):
     """Returns a link to the chosen districts page."""
@@ -62,8 +71,84 @@ def get_municipality_links(district_link):
 
     return municipality_list
 
+def extract_summary_data(soup):
+    summary_table = soup.find_all("table", {"class": "table"})[0]  # first table is the summary
+    rows = summary_table.find_all("tr")
+
+    for row in rows:
+        voters_cell = row.find("td", {"headers": "sa2"})
+        envelopes_cell = row.find("td", {"headers": "sa3"})
+        valid_votes_cell = row.find("td", {"headers": "sa6"})
+
+        if voters_cell:
+            voters = clean_number(html.unescape(voters_cell.text))
+        if envelopes_cell:
+            envelopes = clean_number(html.unescape(envelopes_cell.text))
+        if valid_votes_cell:
+            valid_votes = clean_number(html.unescape(valid_votes_cell.text))
 
 
-district_link = find_district_link("Ostrava-město")
+    return {
+        "voters": voters,
+        "envelopes": envelopes,
+        "valid_votes": valid_votes
+    }
+
+def scrape_municipality_result(municipality):
+
+    page = get(municipality["link"])
+    soup = BeautifulSoup(page.text, "html.parser")
+    return extract_summary_data(soup)
+
+
+    """### return {
+        "code": municipality["code"],
+        "name": municipality["name"],
+        "voters": voters,
+        "envelopes": envelopes,
+        "valid_votes": valid_votes,
+        "votes": votes,
+        "party_names": party_names  # keep for now to confirm vote order
+    }"""
+
+def write_results_to_csv(filename, municipality_results, party_names):
+    """Writes municipality results to a CSV file with one line per municipality."""
+    header = ["kód obce", "název obce", "voliči v seznamu", "vydané obálky", "platné hlasy"] + party_names
+
+    with open(filename, "w", newline='', encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow(header)
+
+        for municipality in municipality_results:
+            row = [
+                municipality["code"],
+                municipality["name"],
+                municipality["voters"],
+                municipality["envelopes"],
+                municipality["valid_votes"]
+            ] + municipality["votes"]
+            writer.writerow(row)
+municipality_results = [
+    {
+        "code": "CZ0714",
+        "name": "Přerov",
+        "voters": "54000",
+        "envelopes": "39000",
+        "valid_votes": "38500",
+        "votes": ["10000", "15000", "5000"]
+    },
+    {
+        "code": "CZ0214",
+        "name": "Perov",
+        "voters": "54000",
+        "envelopes": "39000",
+        "valid_votes": "38500",
+        "votes": ["10000", "15000", "5000"]
+    }]
+party_names = ["ODS", "ANO 2011", "ČSSD"]
+write_results_to_csv("fdg.csv", municipality_results, party_names)
+"""district_link = find_district_link("Ostrava-město")
 municipalities = get_municipality_links(district_link)
-print(municipalities)
+for municipality in municipalities:
+    result = scrape_municipality_result(municipality)
+    print(result)"""
