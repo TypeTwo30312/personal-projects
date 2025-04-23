@@ -34,13 +34,13 @@ def find_district_link(district):
                 district_dict[district_name] = full_link
     return district_dict[district]
 
-def get_town_links(district_link):
-    """Return a list of dicts with town code, name, and result page link from the given district link."""
+def get_municipality_links(district_link):
+    """Return a list of dicts with municipality code, name, and result page link from the given district link."""
     base_url = "https://www.volby.cz/pls/ps2017nss/"
     page = get(district_link)
     soup = BeautifulSoup(page.text, "html.parser")
 
-    town_list = []
+    municipality_list = []
 
     rows = soup.find_all("tr")
 
@@ -54,14 +54,16 @@ def get_town_links(district_link):
             if link_tag:
                 relative_link = html.unescape(link_tag["href"])
                 full_link = base_url + relative_link
-                town_list.append({
+                municipality_list.append({
                     "code": code,
                     "name": name,
                     "link": full_link
                 })
 
-    return town_list
+    return municipality_list
+
+
 
 district_link = find_district_link("Ostrava-město")
-towns = get_town_links(district_link)
-print(towns)
+municipalities = get_municipality_links(district_link)
+print(municipalities)
