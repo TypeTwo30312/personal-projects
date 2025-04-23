@@ -42,6 +42,17 @@ def count_bulls_and_cows(secret, guess):
     cows = sum(1 for char in guess if char in secret) - bulls
     return bulls, cows
 
+def evaluate_skill(attempts):
+    """Return a comment on the player's performance based on number of attempts."""
+    if attempts <= 7:
+        return "Excellent! You really know how to play!"
+    elif attempts <= 12:
+        return "Good job! That's a solid result."
+    elif attempts <= 20:
+        return "Not bad, but there's room for improvement."
+    else:
+        return "Keep practicing! Try to use elimination and strategy."
+
 def play_game():
     """Main game loop."""
     secret = generate_secret_number()
@@ -52,21 +63,22 @@ Hi there!
 I've generated a random 4-digit number for you.
 Let's play a Bulls and Cows game.
 -----------------------------------------------
-""") ### write the intro
+""")
     while True:
         guess = input("Enter your guess: ")
         print("-----------------------")
         if not is_valid_guess(guess):
             continue
-            ### print the guess?
+
         attempts += 1
         bulls, cows = count_bulls_and_cows(secret, guess)
-        print(f"{bulls} bulls, {cows} cows") ### plural forms
+        print(f"{bulls} bull{'s' if bulls != 1 else ''}, {cows} cow{'s' if cows != 1 else ''}")
         print("-----------------------")
         if bulls == 4:
             print(f"Correct!!! You guessed the secret number in {attempts} guesses.")
+            print(evaluate_skill(attempts))
             break
-        if attempts > 7:
+        if attempts > 20:
             print("game over")
             break
     
