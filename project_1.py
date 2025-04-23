@@ -6,7 +6,7 @@ author: Tomáš Vamberský
 
 email: tomas.vambersky@protonmail.com
 
-discord:
+discord: TypeTwo
 
 """
 import sys

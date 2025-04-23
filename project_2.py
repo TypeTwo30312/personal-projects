@@ -6,7 +6,7 @@ author: Tomáš Vamberský
 
 email: tomas.vambersky@protonmail.com
 
-discord:
+discord: typetwo
 
 """
 
@@ -77,9 +77,6 @@ Let's play a Bulls and Cows game.
         if bulls == 4:
             print(f"Correct!!! You guessed the secret number in {attempts} guesses.")
             print(evaluate_skill(attempts))
-            break
-        if attempts > 20:
-            print("game over")
             break
     
 if __name__ == "__main__":
